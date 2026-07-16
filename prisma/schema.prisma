@@ -1,0 +1,123 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum GradeLevel {
+  PP1 PP2 GRADE1 GRADE2 GRADE3 GRADE4 GRADE5 GRADE6 GRADE7 GRADE8 GRADE9
+}
+
+enum ExpectationLevel {
+  EE ME AE BE
+}
+
+enum AssessmentType {
+  FORMATIVE SUMMATIVE SBA
+}
+
+enum PaymentStatus {
+  PENDING SUCCESSFUL FAILED
+}
+
+model Parent {
+  id          String    @id @default(uuid())
+  name        String
+  phoneNumber String    @unique
+  email       String?   @unique
+  students    Student[]
+  createdAt   DateTime  @default(now())
+}
+
+model Student {
+  id              String            @id @default(uuid())
+  admissionNumber String            @unique
+  nemisUpi        String?           @unique
+  name            String
+  grade           GradeLevel
+  dateOfBirth     DateTime
+  parent          Parent            @relation(fields: [parentId], references: [id])
+  parentId        String
+  feeBalance      Decimal           @default(0.00)
+  assessments     AssessmentEntry[]
+  portfolios      DigitalPortfolio[]
+  invoices        Invoice[]
+  payments        Payment[]
+  createdAt       DateTime          @default(now())
+}
+
+model LearningArea {
+  id      String    @id @default(uuid())
+  name    String
+  grade   GradeLevel
+  strands Strand[]
+}
+
+model Strand {
+  id             String       @id @default(uuid())
+  name           String
+  learningArea   LearningArea @relation(fields: [learningAreaId], references: [id])
+  learningAreaId String
+  subStrands     SubStrand[]
+}
+
+model SubStrand {
+  id          String            @id @default(uuid())
+  name        String
+  strand      Strand            @relation(fields: [strandId], references: [id])
+  strandId    String
+  assessments AssessmentEntry[]
+}
+
+model AssessmentEntry {
+  id             String           @id @default(uuid())
+  student        Student          @relation(fields: [studentId], references: [id])
+  studentId      String
+  subStrand      SubStrand        @relation(fields: [subStrandId], references: [id])
+  subStrandId    String
+  type           AssessmentType
+  score          Float?
+  rubricLevel    ExpectationLevel
+  competencies   String[]
+  values         String[]
+  pcis           String[]
+  teacherRemarks String?
+  assessedBy     String
+  createdAt      DateTime         @default(now())
+}
+
+model DigitalPortfolio {
+  id          String   @id @default(uuid())
+  student     Student  @relation(fields: [studentId], references: [id])
+  studentId   String
+  mediaUrl    String
+  mediaType   String
+  description String
+  uploadedBy  String
+  createdAt   DateTime @default(now())
+}
+
+model Invoice {
+  id          String   @id @default(uuid())
+  student     Student  @relation(fields: [studentId], references: [id])
+  studentId   String
+  amount      Decimal
+  description String
+  isPaid      Boolean  @default(false)
+  dueDate     DateTime
+  createdAt   DateTime @default(now())
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  student        Student       @relation(fields: [studentId], references: [id])
+  studentId      String
+  amount         Decimal
+  transactionRef String        @unique
+  status         PaymentStatus @default(PENDING)
+  phoneNumber    String
+  createdAt      DateTime      @default(now())
+}
