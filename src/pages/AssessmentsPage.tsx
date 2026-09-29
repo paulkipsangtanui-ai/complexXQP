@@ -1,0 +1,15 @@
+export function AcademicsPage() {
+  return (
+    <div className="card">
+      <p className="eyebrow">Academic core</p>
+      <h2>Grades, streams, subjects and CBC curriculum</h2>
+      <div className="stats-grid small-grid">
+        <div className="stat-card"><div className="label">Grades</div><div className="value">PP1–9</div></div>
+        <div className="stat-card"><div className="label">Streams</div><div className="value">Configured</div></div>
+        <div className="stat-card"><div className="label">Subjects</div><div className="value">CBC linked</div></div>
+        <div className="stat-card"><div className="label">Teacher allocation</div><div className="value">Active</div></div>
+      </div>
+      <p className="notice">Academic modules read from Firestore collections such as grades, streams, subjects, learningAreas, strands and competencies.</p>
+    </div>
+  );
+}

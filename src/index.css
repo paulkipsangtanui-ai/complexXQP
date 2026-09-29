@@ -1,0 +1,61 @@
+import { addDoc, collection, getDocs } from 'firebase/firestore';
+import { db, firebaseConfigured } from './firebase';
+
+export const seedDemoData = async () => {
+  if (!firebaseConfigured) {
+    throw new Error('FIREBASE CONNECTION REQUIRED');
+  }
+
+  const learnersSnap = await getDocs(collection(db, 'learners'));
+  if (!learnersSnap.empty) {
+    return { inserted: 0, message: 'Existing data detected. Demo data was not applied.' };
+  }
+
+  const sampleLearners = [
+    {
+      learnerId: 'CHEP-1001',
+      admissionNumber: 'ADM-1001',
+      fullName: 'Amina Wanjiru',
+      firstName: 'Amina',
+      lastName: 'Wanjiru',
+      grade: 'Grade 7',
+      stream: 'North',
+      status: 'Active',
+      boardingStatus: 'Boarding',
+      guardian: 'Mary Wanjiru',
+      emergencyContact: '+254712345678',
+      medicalInfo: 'No known allergies',
+    },
+    {
+      learnerId: 'CHEP-1002',
+      admissionNumber: 'ADM-1002',
+      fullName: 'Brian Otieno',
+      firstName: 'Brian',
+      lastName: 'Otieno',
+      grade: 'Grade 8',
+      stream: 'South',
+      status: 'Active',
+      boardingStatus: 'Boarding',
+      guardian: 'Peter Otieno',
+      emergencyContact: '+254723456789',
+      medicalInfo: 'Asthma inhaler available',
+    },
+  ];
+
+  const insertedLearners = await Promise.all(
+    sampleLearners.map((learner) => addDoc(collection(db, 'learners'), learner)),
+  );
+
+  await addDoc(collection(db, 'fees'), {
+    learnerId: 'CHEP-1001',
+    feeCategory: 'School Fees',
+    amount: 12000,
+    dueDate: '2026-10-15',
+    status: 'Outstanding',
+  });
+
+  return {
+    inserted: insertedLearners.length,
+    message: 'DEMO DATA loaded successfully for development only.',
+  };
+};

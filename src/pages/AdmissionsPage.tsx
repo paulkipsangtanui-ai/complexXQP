@@ -1,0 +1,77 @@
+import { useEffect, useState } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db, firebaseConfigured } from '../firebase/firebase';
+
+export function LearnersPage() {
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!firebaseConfigured) {
+        setItems([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const result = await getDocs(collection(db, 'learners'));
+        setItems(result.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      } catch {
+        setItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
+  if (loading) return <div className="card">Loading learners...</div>;
+  if (!firebaseConfigured) {
+    return <div className="card alert-box">FIREBASE CONNECTION REQUIRED</div>;
+  }
+
+  return (
+    <div className="card">
+      <div className="section-header">
+        <div>
+          <p className="eyebrow">Learner management</p>
+          <h2>All learners</h2>
+        </div>
+        <button className="primary-button">New learner</button>
+      </div>
+
+      {items.length === 0 ? (
+        <div className="empty-state">NO DATA AVAILABLE</div>
+      ) : (
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Admission No.</th>
+                <th>Full name</th>
+                <th>Grade</th>
+                <th>Stream</th>
+                <th>Status</th>
+                <th>Guardian</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.admissionNumber || item.learnerId || 'N/A'}</td>
+                  <td>{item.fullName || `${item.firstName || ''} ${item.lastName || ''}`.trim()}</td>
+                  <td>{item.grade || 'N/A'}</td>
+                  <td>{item.stream || 'N/A'}</td>
+                  <td>{item.status || 'Active'}</td>
+                  <td>{item.guardian || 'N/A'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
