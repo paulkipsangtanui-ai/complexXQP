@@ -1,0 +1,74 @@
+import { Refine, type AuthBindings } from '@refinedev/core';
+import { routerBindings } from '@refinedev/react-router-v6';
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
+import { AppLayout } from './components/layout/AppLayout';
+import { authProvider } from './firebase/authProvider';
+import { dataProvider } from './firebase/firestoreDataProvider';
+import { DashboardPage } from './pages/DashboardPage';
+import { LearnersPage } from './pages/LearnersPage';
+import { AdmissionsPage } from './pages/AdmissionsPage';
+import { AcademicsPage } from './pages/AcademicsPage';
+import { AssessmentsPage } from './pages/AssessmentsPage';
+import { ResultsPage } from './pages/ResultsPage';
+import { AttendancePage } from './pages/AttendancePage';
+import { StaffPage } from './pages/StaffPage';
+import { FinancePage } from './pages/FinancePage';
+import { DocumentsPage } from './pages/DocumentsPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { CommunicationPage } from './pages/CommunicationPage';
+import { ParentsPage } from './pages/ParentsPage';
+
+const resources = [
+  { name: 'dashboard', list: '/', meta: { label: 'Dashboard' } },
+  { name: 'learners', list: '/learners', meta: { label: 'Learners' } },
+  { name: 'admissions', list: '/admissions', meta: { label: 'Admissions' } },
+  { name: 'academics', list: '/academics', meta: { label: 'Academic' } },
+  { name: 'assessments', list: '/assessments', meta: { label: 'Assessments' } },
+  { name: 'results', list: '/results', meta: { label: 'Results' } },
+  { name: 'attendance', list: '/attendance', meta: { label: 'Attendance' } },
+  { name: 'staff', list: '/staff', meta: { label: 'Staff & HR' } },
+  { name: 'finance', list: '/finance', meta: { label: 'Finance' } },
+  { name: 'documents', list: '/documents', meta: { label: 'Documents' } },
+  { name: 'settings', list: '/settings', meta: { label: 'Settings' } },
+  { name: 'communications', list: '/communications', meta: { label: 'Communication' } },
+  { name: 'parents', list: '/parents', meta: { label: 'Parents' } },
+];
+
+const RefineApp = () => (
+  <Refine
+    authProvider={authProvider as AuthBindings}
+    dataProvider={dataProvider as any}
+    resources={resources as any}
+    routerProvider={routerBindings}
+    options={{
+      syncWithLocation: true,
+      warnWhenUnsavedChanges: true,
+      projectId: 'chepseon-school-system',
+    }}
+  >
+    <BrowserRouter>
+      <Routes>
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/learners" element={<LearnersPage />} />
+          <Route path="/admissions" element={<AdmissionsPage />} />
+          <Route path="/academics" element={<AcademicsPage />} />
+          <Route path="/assessments" element={<AssessmentsPage />} />
+          <Route path="/results" element={<ResultsPage />} />
+          <Route path="/attendance" element={<AttendancePage />} />
+          <Route path="/staff" element={<StaffPage />} />
+          <Route path="/finance" element={<FinancePage />} />
+          <Route path="/documents" element={<DocumentsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/communications" element={<CommunicationPage />} />
+          <Route path="/parents" element={<ParentsPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  </Refine>
+);
+
+export default function App() {
+  return <RefineApp />;
+}

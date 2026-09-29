@@ -1,0 +1,15 @@
+export function StaffPage() {
+  return (
+    <div className="card">
+      <p className="eyebrow">Staff & HR</p>
+      <h2>Teacher records, allocations and leave</h2>
+      <div className="stats-grid small-grid">
+        <div className="stat-card"><div className="label">Teachers</div><div className="value">44</div></div>
+        <div className="stat-card"><div className="label">Departments</div><div className="value">8</div></div>
+        <div className="stat-card"><div className="label">Roles</div><div className="value">16</div></div>
+        <div className="stat-card"><div className="label">Leave</div><div className="value">3 pending</div></div>
+      </div>
+      <p className="notice">Sensitive HR records remain protected via role-based access control and Firestore rules.</p>
+    </div>
+  );
+}

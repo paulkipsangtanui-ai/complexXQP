@@ -1,0 +1,134 @@
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+  type QueryConstraint,
+} from 'firebase/firestore';
+import { db, firebaseConfigured } from './firebase';
+
+const ensureConfigured = () => {
+  if (!firebaseConfigured) {
+    throw new Error('FIREBASE CONNECTION REQUIRED');
+  }
+};
+
+const transformDoc = (document: any) => ({
+  id: document.id,
+  ...document.data(),
+});
+
+export const dataProvider = {
+  getList: async ({ resource, pagination, sort, filters }: any) => {
+    ensureConfigured();
+    const colRef = collection(db, resource);
+    const constraints: QueryConstraint[] = [];
+
+    if (filters && Array.isArray(filters)) {
+      filters.forEach((filter: any) => {
+        if (filter.field && filter.operator === 'eq' && filter.value !== undefined) {
+          constraints.push(where(filter.field, '==', filter.value));
+        }
+      });
+    }
+
+    const snapshot = await getDocs(query(colRef, ...constraints));
+    const items = snapshot.docs.map(transformDoc);
+    const sorted = sort && sort.field ? [...items].sort((a, b) => {
+      const dir = sort.order === 'desc' ? -1 : 1;
+      const left = a[sort.field];
+      const right = b[sort.field];
+      if (left === right) return 0;
+      return (left > right ? 1 : -1) * dir;
+    }) : items;
+
+    const page = pagination?.current || 1;
+    const pageSize = pagination?.pageSize || 25;
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+
+    return {
+      data: sorted.slice(start, end),
+      total: sorted.length,
+    };
+  },
+
+  getOne: async ({ resource, id }: any) => {
+    ensureConfigured();
+    const docRef = doc(db, resource, id);
+    const snapshot = await getDoc(docRef);
+    if (!snapshot.exists()) {
+      throw new Error('Record not found');
+    }
+    return { data: transformDoc(snapshot) };
+  },
+
+  create: async ({ resource, variables }: any) => {
+    ensureConfigured();
+    const collectionRef = collection(db, resource);
+    const document = await addDoc(collectionRef, { ...variables, createdAt: new Date().toISOString() });
+    return { data: { id: document.id, ...variables } };
+  },
+
+  update: async ({ resource, id, variables }: any) => {
+    ensureConfigured();
+    const documentRef = doc(db, resource, id);
+    await updateDoc(documentRef, variables);
+    const updated = await getDoc(documentRef);
+    return { data: transformDoc(updated) };
+  },
+
+  deleteOne: async ({ resource, id }: any) => {
+    ensureConfigured();
+    const documentRef = doc(db, resource, id);
+    await deleteDoc(documentRef);
+    return { data: { id } };
+  },
+
+  getMany: async ({ resource, ids }: any) => {
+    ensureConfigured();
+    const results = await Promise.all(
+      ids.map(async (id: string) => {
+        const docRef = doc(db, resource, id);
+        const snapshot = await getDoc(docRef);
+        return snapshot.exists() ? transformDoc(snapshot) : null;
+      }),
+    );
+    return { data: results.filter(Boolean) };
+  },
+
+  getApiUrl: () => '/api',
+  createMany: async ({ resource, variables }: any) => {
+    ensureConfigured();
+    const created = await Promise.all(
+      variables.map(async (item: any) => {
+        const ref = await addDoc(collection(db, resource), { ...item, createdAt: new Date().toISOString() });
+        return { id: ref.id, ...item };
+      }),
+    );
+    return { data: created };
+  },
+};
+
+export const firestoreQuery = async (resource: string) => {
+  ensureConfigured();
+  const documents = await getDocs(collection(db, resource));
+  return documents.docs.map(transformDoc);
+};
+
+export const firestoreUpsert = async (resource: string, payload: Record<string, any>, id?: string) => {
+  ensureConfigured();
+  if (id) {
+    const ref = doc(db, resource, id);
+    await setDoc(ref, payload, { merge: true });
+    return id;
+  }
+  const ref = await addDoc(collection(db, resource), payload);
+  return ref.id;
+};

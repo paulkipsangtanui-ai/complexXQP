@@ -1,0 +1,9 @@
+export function DocumentsPage() {
+  return (
+    <div className="card">
+      <p className="eyebrow">Documents</p>
+      <h2>School documents and secure uploads</h2>
+      <p className="notice">Uploaded documents are stored in Firebase Storage and protected by role-based permissions. If storage is not configured, the app shows the not-configured state.</p>
+    </div>
+  );
+}

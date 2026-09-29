@@ -1,0 +1,9 @@
+export function CommunicationPage() {
+  return (
+    <div className="card">
+      <p className="eyebrow">Communication</p>
+      <h2>Announcements and notification centre</h2>
+      <p className="notice">External SMS or WhatsApp is marked only when a provider is actually configured. Otherwise, the system displays NOT CONFIGURED.</p>
+    </div>
+  );
+}
